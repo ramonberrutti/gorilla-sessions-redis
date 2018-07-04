@@ -144,7 +144,7 @@ func (s *Store) load(session *sessions.Session) error {
 		return ss.Err()
 	}
 
-	return securecookie.DecodeMulti(session.Name(), ss.String(),
+	return securecookie.DecodeMulti(session.Name(), ss.Val(),
 		&session.Values, s.Codecs...)
 }
 
