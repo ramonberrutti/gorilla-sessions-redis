@@ -12,11 +12,6 @@ import (
 )
 
 // NewStore returns a new Store.
-//
-// The path argument is the directory where sessions will be saved. If empty
-// it will use os.TempDir().
-//
-// See NewCookieStore() for a description of the other parameters.
 func NewStore(redis *redis.Client, keyPairs ...[]byte) *Store {
 	store := &Store{
 		Codecs: securecookie.CodecsFromPairs(keyPairs...),
@@ -33,10 +28,6 @@ func NewStore(redis *redis.Client, keyPairs ...[]byte) *Store {
 }
 
 // Store stores sessions in redis.
-//
-// It also serves as a reference for custom stores.
-//
-// This store is still experimental and not well tested. Feedback is welcome.
 type Store struct {
 	Codecs  []securecookie.Codec
 	Options *sessions.Options // default configuration
