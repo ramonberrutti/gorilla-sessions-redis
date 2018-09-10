@@ -65,8 +65,9 @@ func (s *Store) New(r *http.Request, name string) (*sessions.Session, error) {
 	if c, errCookie := r.Cookie(name); errCookie == nil {
 		err = securecookie.DecodeMulti(name, c.Value, &session.ID, s.Codecs...)
 		if err == nil {
-			err = s.load(session)
-			if err == nil {
+			var ok bool
+			ok, err = s.load(session)
+			if err == nil && ok {
 				session.IsNew = false
 			}
 		}
@@ -129,13 +130,17 @@ func (s *Store) save(session *sessions.Session) error {
 }
 
 // load get key from redis and decodes its content into session.Values.
-func (s *Store) load(session *sessions.Session) error {
+func (s *Store) load(session *sessions.Session) (bool, error) {
 	ss := s.redis.Get("session:" + session.ID)
-	if ss.Err() != nil {
-		return ss.Err()
+	if ss.Err() != nil && ss.Err() != redis.Nil {
+		return false, ss.Err()
 	}
 
-	return securecookie.DecodeMulti(session.Name(), ss.Val(),
+	if ss.Err() == redis.Nil {
+		return false, nil
+	}
+
+	return true, securecookie.DecodeMulti(session.Name(), ss.Val(),
 		&session.Values, s.Codecs...)
 }
 
